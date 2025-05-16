@@ -320,9 +320,9 @@ def graficos(config, google, monit):
 if __name__=='__main__':
     config = pd.read_csv(arq_conf)
     config = config[config['ativar']=='S']
-    google = previsoes(config)
+    # google = previsoes(config)
     monit = monitor()
-    graficos(config, google, monit)
+    # graficos(config, google, monit)
     
 
 

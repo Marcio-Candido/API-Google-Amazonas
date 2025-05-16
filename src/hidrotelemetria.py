@@ -92,8 +92,8 @@ class get_hidrotelemetria:
                 # simula o aperto da tecla shift para não entrar
                 # na tela de proteção do windows
                 pyautogui.press('shift')
-                print(codigo, inicio)
                 data = dt.datetime.now()
+                print(codigo, inicio, data, validade)
                 if data<(validade - dt.timedelta(seconds=30)):
                     dtb = dt.datetime.strftime(inicio,'%Y-%m-%d')
                     aux = self.get_dados_tel(codigo, dtb, auth, tipo)
