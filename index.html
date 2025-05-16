@@ -81,12 +81,16 @@
         // Função para adicionar marcadores no mapa
         function addMarkers(data) {
             data.forEach(location => {
+			    // Verifica se a linha está marcada como 'S' na coluna "ativar"
+				if (location.ativar !== "S") {
+					return; // pula para o próximo se não for para ativar
+				}
 				if (location.lat && location.lng) {
                     const lat = parseFloat(location.lat);
                     const lng = parseFloat(location.lng);
 
                     if (isNaN(lat) || isNaN(lng)) {
-                        console.warn(`Coordenadas inválidas para: ${location.name}`);
+                        console.warn(`Coordenadas inválidas para: ${location.nome}`);
                         return;
                     }
 
@@ -96,7 +100,7 @@
                             <div class="popup-header">
                                 <img src="imagens/logosgb_horizontal_original_v2.png" alt="logomarca" />
                             </div>
-                            <img src="${location.image}" alt="${location.name}" />
+                            <img src="${location.imagem}" alt="${location.nome}" />
                         </div>
                     `;
 					
