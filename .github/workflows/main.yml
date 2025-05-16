@@ -24,7 +24,7 @@ jobs:
           pip install requests datetime pandas matplotlib beautifulsoup4 numpy
 
       - name: Executar script
-        run: python src/api-google.py  # Substitua pelo nome correto do arquivo
+        run: python src/api_google.py  # Substitua pelo nome correto do arquivo
       
       - name: Verificar status do Git
         run: git status
