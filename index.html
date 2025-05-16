@@ -58,7 +58,7 @@
 
         // Adicionar camada de tiles
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 18,
+            maxZoom: 14,
             attribution: '© OpenStreetMap contributors'
         }).addTo(map);
 
@@ -82,7 +82,7 @@
         function addMarkers(data) {
             data.forEach(location => {
 				// Verifica se a linha está marcada como 'S' na coluna "ativar (S/N)"
-				if (location["ativar (S/N)"] !== "S") {
+				if (location.ativar !== "S") {
 					return; // pula para o próximo se não for para ativar
 				}
 				
@@ -104,7 +104,7 @@
                             <img src="${location.image}" alt="${location.name}" />
                         </div>
                     `;
-
+					
                     // Criar marcador e vincular popup
                     const marker = L.marker([lat, lng]).addTo(map);
                     marker.bindPopup(popupContent);

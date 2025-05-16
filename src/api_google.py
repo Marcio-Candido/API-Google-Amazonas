@@ -191,7 +191,7 @@ def graficos(config, google, monit):
         df1.set_index('datahora', inplace=True)
         data = dt.datetime(df1.index[0].year, df1.index[0].month, df1.index[0].day)
         ampl = amplitude(cod, data)
-        limiares = config[config['id_google']== codigo]['cota_ref (S/N)'].iloc[0]
+        limiares = config[config['id_google']== codigo]['cota_ref'].iloc[0]
 
         if tem_curva(cod, data):
             # Limiares

@@ -1,4 +1,4 @@
-﻿codigo,nome,data,id_google,cota_ref (S/N),atencao,alerta,inundacao,imagem,ativar (S/N)
+﻿codigo,nome,data,id_google,cota_ref,atencao,alerta,inundacao,imagem,ativar
 14620000,Boa Vista,12/05/2025,hybas_6120155910,S,750,800,850,imagens/hybas_6120155910.png,S
 14740000,Fazenda Anauá,12/05/2025,hybas_6120186820,N,0,0,0,imagens/hybas_6120186820.png,S
 14680001,Fé Esperança,12/05/2025,hybas_6120155040,N,0,0,0,imagens/hybas_6120155040.png,S
