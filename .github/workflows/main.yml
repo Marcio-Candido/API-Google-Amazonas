@@ -21,7 +21,7 @@ jobs:
 
       - name: Instalar dependências
         run: |
-          pip install requests datetime pandas matplotlib beautifulsoup4 numpy
+          pip install requests datetime pandas matplotlib beautifulsoup4 numpy pyautogui
 
       - name: Executar script
         run: python src/api_google.py  # Substitua pelo nome correto do arquivo
