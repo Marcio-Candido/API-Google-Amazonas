@@ -319,7 +319,7 @@ def graficos(config, google, monit):
 # ROTINA PRINCIPAL
 if __name__=='__main__':
     config = pd.read_csv(arq_conf)
-    config = config[config['ativar (S/N)']=='S']
+    config = config[config['ativar']=='S']
     google = previsoes(config)
     monit = monitor()
     graficos(config, google, monit)
