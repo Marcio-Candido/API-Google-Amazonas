@@ -1,4 +1,4 @@
-name: API-Google
+name: API-Google-Hidrotelemetria
 run-name: Gerar gráficos de previsões
 
 on:
