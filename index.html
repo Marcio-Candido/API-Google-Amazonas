@@ -81,12 +81,7 @@
         // Função para adicionar marcadores no mapa
         function addMarkers(data) {
             data.forEach(location => {
-				// Verifica se a linha está marcada como 'S' na coluna "ativar (S/N)"
-				if (location.ativar !== "S") {
-					return; // pula para o próximo se não for para ativar
-				}
-				
-                if (location.lat && location.lng) {
+				if (location.lat && location.lng) {
                     const lat = parseFloat(location.lat);
                     const lng = parseFloat(location.lng);
 
