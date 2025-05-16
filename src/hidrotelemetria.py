@@ -103,7 +103,7 @@ class get_hidrotelemetria:
                     inicio = inicio + dt.timedelta(days=1)
                 else:
                     status, auth, validade = self.get_auth()
-                    validade = dt.datetime.now() + dt.timedelta(minutes=10))
+                    validade = dt.datetime.now() + dt.timedelta(minutes=10)
                     if status!= 200:
                         df=pd.DataFrame()
                         flag = False
