@@ -35,4 +35,4 @@ jobs:
           git config --global user.email "github-actions@github.com"
           git add imagens/
           git commit -m "Atualização" || echo "Nenhuma alteração para commit"
-          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/Marcio-Candido/Previsoes-API-Google
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/Marcio-Candido/API-Google-Amazonas
