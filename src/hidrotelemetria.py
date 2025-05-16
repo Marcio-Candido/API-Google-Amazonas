@@ -88,7 +88,7 @@ class get_hidrotelemetria:
         status, auth, validade = self.get_auth()    
         flag = True
         if status==200:
-            validade = dt.datetime.now() + dt.timedelta(minutes=10))
+            validade = dt.datetime.now() + dt.timedelta(minutes=10)
             while inicio<= fim and flag:
                 # simula o aperto da tecla shift para não entrar
                 # na tela de proteção do windows
