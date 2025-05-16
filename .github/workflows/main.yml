@@ -1,0 +1,38 @@
+name: API-Google
+run-name: Gerar gráficos de previsões
+
+on:
+  schedule:
+    - cron: '0 15 * * *'  # Executa todos os dias às 15:00 UTC
+  workflow_dispatch:  # Permite execução manual
+
+jobs:
+  run_script:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.6.x'
+
+      - name: Instalar dependências
+        run: |
+          pip install requests datetime pandas matplotlib beautifulsoup4 numpy
+
+      - name: Executar script
+        run: python src/api-google.py  # Substitua pelo nome correto do arquivo
+      
+      - name: Verificar status do Git
+        run: git status
+
+      - name: Commit e push dos gráficos gerados
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git add imagens/
+          git commit -m "Atualização" || echo "Nenhuma alteração para commit"
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/Marcio-Candido/Previsoes-API-Google
