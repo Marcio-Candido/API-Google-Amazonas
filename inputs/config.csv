@@ -1,7 +1,7 @@
-﻿codigo,nome,data,id_google,cota_ref,atencao,alerta,inundacao,imagem,ativar
-14620000,Boa Vista,12/05/2025,hybas_6120155910,S,750,800,850,imagens/hybas_6120155910.png,S
-14740000,Fazenda Anauá,12/05/2025,hybas_6120186820,N,0,0,0,imagens/hybas_6120186820.png,S
-14680001,Fé Esperança,12/05/2025,hybas_6120155040,N,0,0,0,imagens/hybas_6120155040.png,S
-14710000,Caracaraí,12/05/2025,hybas_6120174530,S,800,850,900,imagens/hybas_6120174530.png,S
-14690000,Mucajaí,12/05/2025,hybas_6120162080,N,0,0,0,imagens/hybas_6120162080.png,S
-14527000,Ponte do Tacutu,12/05/2025,ANA_14527000,N,0,0,0,imagens/ANA_14527000.png,S
+﻿codigo,nome,lat,lng,data,id_google,cota_ref,atencao,alerta,inundacao,imagem,ativar
+14620000,Boa Vista,2.8271,-60.6521,12/05/2025,hybas_6120155910,S,750,800,850,imagens/hybas_6120155910.png,S
+14740000,Fazenda Anauá,1.1271,-60.2188,12/05/2025,hybas_6120186820,N,0,0,0,imagens/hybas_6120186820.png,S
+14680001,Fé Esperança,2.8646,-61.4146,12/05/2025,hybas_6120155040,N,0,0,0,imagens/hybas_6120155040.png,S
+14710000,Caracaraí,1.8104,-61.1229,12/05/2025,hybas_6120174530,S,800,850,900,imagens/hybas_6120174530.png,S
+14690000,Mucajaí,2.5271,-60.9396,12/05/2025,hybas_6120162080,N,0,0,0,imagens/hybas_6120162080.png,S
+14527000,Ponte do Tacutu,3.5675,-59.8883,12/05/2025,ANA_14527000,N,0,0,0,imagens/ANA_14527000.png,S
