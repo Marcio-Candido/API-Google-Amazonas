@@ -17,25 +17,29 @@ import numpy as np
 import hidrotelemetria as dat
 
 # CONSTANTES
+# Diretorio de trabalho
+#dir_work = 'C:/Users/marcio.candido/Documents/GitHub/API-Google-Amazonas/'
+dir_work =''
+
 # Token de autenticação google
 KEY = 'AIzaSyDmFWQWhI_BAly6eXFDWKCXpmyn6kH3q4E'
 region_code = "BR"
 
 # Arquivo de configuração dos dados
-arq_conf = 'inputs/config.csv'
+arq_conf = f'{dir_work}inputs/config.csv'
 
 # Arquivo com as curvas-chaves
-arq_curvas = 'inputs/curvas.csv'
+arq_curvas = f'{dir_work}inputs/curvas.csv'
 curvas = pd.read_csv(arq_curvas)
 curvas['inicio'] = pd.to_datetime(curvas['inicio'])
 curvas['fim'] = pd.to_datetime(curvas['fim'])
 
 # Carregar a imagem de marca d'água
-logo = 'inputs/simbolo2.png'
+logo = f'{dir_work}inputs/simbolo2.png'
 imagem = mpimg.imread(logo)
 
 # Diretorio onde as imagens vão ser gravadas
-result = 'imagens'
+result = f'{dir_work}imagens'
 
 # DEFINIÇÕES DE FUNÇÕES
 # API-Google
@@ -161,7 +165,7 @@ def monitor():
     usuario = '00118378619'
     password = 'fuzzyclips'
     # Arquivo com a lista das estações a serem baixadas e a data de inicio de cada upload 
-    arq = r'inputs/config.csv'
+    arq = f'{dir_work}inputs/config.csv'
     # Pasta onde os arquivos txt estão ou vão ser gravados
     pasta = r'dados'
     # Número máximo de dias antes da data atual que poderá ser atualizado 
@@ -185,136 +189,212 @@ def graficos(config, google, monit):
         nome = config[config['id_google']== codigo]['nome'].iloc[0]
         print(codigo, cod, nome)
         df1 = google[google['codigo']== codigo].copy().reset_index()
-        df1['data'] = df1['data'].dt.tz_localize(None)
-        df1.columns = ['datahora', 'data_prev', 'codigo', 'valor', 'atencao', 'alerta', 'inundacao',
-           'unidade', 'qualityVerified']
-        df1.set_index('datahora', inplace=True)
-        data = dt.datetime(df1.index[0].year, df1.index[0].month, df1.index[0].day)
-        ampl = amplitude(cod, data)
+        df2 = monit[monit['codigo']==cod]['vazao'].copy().dropna()
         limiares = config[config['id_google']== codigo]['cota_ref'].iloc[0]
 
-        if tem_curva(cod, data):
-            # Limiares
-            if df1['unidade'][0]=='METERS':
-                df1['valor'] = [cal_vazao(cod, data, valor*100) for valor in df1['valor'].values]
-            
-            # Assimilação de erro
-            df4 = df1.resample('D').mean()
-            df2 = monit[monit['codigo']==cod]['vazao']
-            df3 = pd.concat([df2,df4], axis=1)
-            df3['erro'] = df3['vazao'] - df3['valor']
-            data = df3['vazao'].last_valid_index()
-            erro = df3.loc[data,'erro']
-            df3['valor_2'] = df3['valor'] + erro 
-            
-            # Gráfico
-            fig, ax = plt.subplots(figsize=(10,6), dpi=300)
-            df3['vazao'].plot(ax=ax,label='Observado', linewidth = 3)
-            df3['valor_2'][df3.index>=data].plot(ax=ax,label='Previsão ajustada', color='black', linewidth = 2, linestyle='--')
-            df3['valor'].plot(ax=ax,label='API-Google', color='red', linewidth = 1, linestyle=':')
-            
-            if limiares == 'S':
-                atencao = config[config['id_google']== codigo]['atencao'].iloc[0]
-                alerta = config[config['id_google']== codigo]['alerta'].iloc[0]
-                inundacao = config[config['id_google']== codigo]['inundacao'].iloc[0]
-                atencao = cal_vazao(cod, data, atencao)
-                alerta  = cal_vazao(cod, data, alerta)
-                inundacao = cal_vazao(cod, data, inundacao)
-                plt.axhline(y=atencao, color='yellow', linestyle='--',linewidth = 2, label='atenção')
-                plt.axhline(y=alerta, color='orange', linestyle='--',linewidth = 2, label='alerta')
-                plt.axhline(y=inundacao, color='red', linestyle='--',linewidth = 2, label='inundação')
-            
-            plt.axvline(x=data,color='black', linestyle='--',linewidth = 1)
+        if not df2.empty:
+            if not df1.empty:
+                df1['data'] = df1['data'].dt.tz_localize(None)
+                df1.columns = ['datahora', 'data_prev', 'codigo', 'valor', 'atencao', 'alerta', 'inundacao',
+                   'unidade', 'qualityVerified']
+                df1.set_index('datahora', inplace=True)
+                data = dt.datetime(df1.index[0].year, df1.index[0].month, df1.index[0].day)
+                ampl = amplitude(cod, data)
+                limiares = config[config['id_google']== codigo]['cota_ref'].iloc[0]
+        
+                if tem_curva(cod, data):
+                    # Conversão de unidades
+                    if df1['unidade'][0]=='METERS':
+                        df1['valor'] = [cal_vazao(cod, data, valor*100) for valor in df1['valor'].values]
+                    # Assimilação de erro
+                    df4 = df1.resample('D').mean()
+                    df3 = pd.concat([df2,df4], axis=1)
+                    df3['erro'] = df3['vazao'] - df3['valor']
+                    data = df3['vazao'].last_valid_index()
+                    erro = df3.loc[data,'erro']
+                    df3['valor_2'] = df3['valor'] + erro 
+                    
+                    # Gráfico
+                    fig, ax = plt.subplots(figsize=(10,6), dpi=300)
+                    df3['vazao'].plot(ax=ax,label='Observado', linewidth = 3)
+                    df3['valor_2'][df3.index>=data].plot(ax=ax,label='Previsão ajustada', color='black', linewidth = 2, linestyle='--')
+                    df3['valor'].plot(ax=ax,label='API-Google', color='red', linewidth = 1, linestyle=':')
+                    
+                    if limiares == 'S':
+                        atencao = config[config['id_google']== codigo]['atencao'].iloc[0]
+                        alerta = config[config['id_google']== codigo]['alerta'].iloc[0]
+                        inundacao = config[config['id_google']== codigo]['inundacao'].iloc[0]
+                        atencao = cal_vazao(cod, data, atencao)
+                        alerta  = cal_vazao(cod, data, alerta)
+                        inundacao = cal_vazao(cod, data, inundacao)
+                        plt.axhline(y=atencao, color='yellow', linestyle='--',linewidth = 2, label='atenção')
+                        plt.axhline(y=alerta, color='orange', linestyle='--',linewidth = 2, label='alerta')
+                        plt.axhline(y=inundacao, color='red', linestyle='--',linewidth = 2, label='inundação')
+                    
+                    plt.axvline(x=data,color='black', linestyle='--',linewidth = 1)
+        
+                    # configuração dos eixos
+                    # Eixo principal
+                    vz_lim = ax.get_ylim()
+                    if vz_lim[0]<0:
+                        ax.set_ylim(0,vz_lim[1])
+                        vz_lim = ax.get_ylim()
+                    h_lim = [cal_cota(cod, data,vz_lim[0]),cal_cota(cod, data,vz_lim[1])]
+                    
+                    if np.isnan(h_lim[0]) or h_lim[0]<ampl[0]:
+                        h_lim[0]= ampl[0]
+                    if np.isnan(h_lim[1]) or h_lim[0]>ampl[1]:
+                        h_lim[1]= ampl[1]
+                    
+                    h_lim[0] = int(h_lim[0]/10)*10
+                    h_lim[1] = int(h_lim[1]/10)*10 + 10
+                    
+                    if np.isnan(h_lim[0]) or h_lim[0]<ampl[0]:
+                        h_lim[0]= ampl[0]
+                    if np.isnan(h_lim[1]) or h_lim[0]>ampl[1]:
+                        h_lim[1]= ampl[1]
+                        
+                    vz_lim = [cal_vazao(cod, data,h_lim[0]),cal_vazao(cod, data,h_lim[1])]
+                    if np.isnan(vz_lim[0]):
+                        vz_lim[0]= ampl[2]
+                    if np.isnan(vz_lim[1]):
+                        vz_lim[1]= ampl[3]
+                        
+                    ax.set_ylim(vz_lim)
+                    size = int(np.round((h_lim[1]-h_lim[0])/80,0)*10)
 
-            # configuração dos eixos
-            # Eixo principal
-            vz_lim = ax.get_ylim()
-            if vz_lim[0]<0:
-                ax.set_ylim(0,vz_lim[1])
-                vz_lim = ax.get_ylim()
-            h_lim = [cal_cota(cod, data,vz_lim[0]),cal_cota(cod, data,vz_lim[1])]
-            
-            if np.isnan(h_lim[0]) or h_lim[0]<ampl[0]:
-                h_lim[0]= ampl[0]
-            if np.isnan(h_lim[1]) or h_lim[0]>ampl[1]:
-                h_lim[1]= ampl[1]
-            
-            h_lim[0] = int(h_lim[0]/10)*10
-            h_lim[1] = int(h_lim[1]/10)*10 + 10
-            
-            if np.isnan(h_lim[0]) or h_lim[0]<ampl[0]:
-                h_lim[0]= ampl[0]
-            if np.isnan(h_lim[1]) or h_lim[0]>ampl[1]:
-                h_lim[1]= ampl[1]
-                
-            vz_lim = [cal_vazao(cod, data,h_lim[0]),cal_vazao(cod, data,h_lim[1])]
-            if np.isnan(vz_lim[0]):
-                vz_lim[0]= ampl[2]
-            if np.isnan(vz_lim[1]):
-                vz_lim[1]= ampl[3]
-                
-            ax.set_ylim(vz_lim)
-            size = int(np.round((h_lim[1]-h_lim[0])/80,0)*10)
-            if (h_lim[0] % size)>0:
-                base = h_lim[0] + (size - (h_lim[0] % size))
+                    if size > 0:  
+                        if (h_lim[0] % size)>0:
+                            base = h_lim[0] + (size - (h_lim[0] % size))
+                        else:
+                            base = h_lim[0]
+                        labels = np.arange(base, h_lim[1], size)
+                        ticks = [cal_vazao(cod, data, q) for q in labels]
+                        
+                    else:
+                        ticks = ax.get_yticks()
+                        labels = [cal_cota(cod, data, q) for q in ticks]
+                    
+                    ax.set_yticks(ticks)
+                    ax.set_yticklabels(labels)
+        
+                    # Adicionar a imagem como fundo
+                    x_lim = ax.get_xlim()
+                    y_lim = ax.get_ylim() 
+                    limite = [x_lim[0],x_lim[1], y_lim[0],y_lim[1]]
+                    ax.imshow(imagem, extent= limite, alpha=0.2, aspect='auto', zorder=0)
+        
+                    # Eixo secundario
+                    ax1 = ax.twinx()
+                    ax1.set_ylim(vz_lim)
+                    ax1.set_yticks(ticks)
+        
+                    ax.grid(True)
+                    ax.legend()
+                    ax.set_ylabel('cota (cm)')
+                    ax1.set_ylabel('vazao (m3/s)')
+                    ax.set_title(f'{cod} - {nome}', fontsize=14, fontweight="bold")
+        
+                    plt.tight_layout()
+                    salvarin =  f'{result}/{codigo}.png'
+                    plt.savefig(salvarin)
+                    # plt.show()   
+                else:
+                    # Gráfico
+                    fig, ax = plt.subplots(figsize=(10,6), dpi=300)
+                    df1.valor.plot(ax=ax,label='API-Google', linewidth = 3)
+                     # Limiares
+                    if limiares=='S':
+                        atencao = config[config['id_google']== codigo]['atencao'].iloc[0]
+                        alerta = config[config['id_google']== codigo]['alerta'].iloc[0]
+                        inundacao = config[config['id_google']== codigo]['inundacao'].iloc[0]
+                        plt.axhline(y=atencao, color='yellow', linestyle='--',linewidth = 2, label='atenção')
+                        plt.axhline(y=alerta, color='orange', linestyle='--',linewidth = 2, label='alerta')
+                        plt.axhline(y=inundacao, color='red', linestyle='--',linewidth = 2, label='inundação')
+                   
+                    # Adicionar a imagem como fundo
+                    x_lim = ax.get_xlim()
+                    y_lim = ax.get_ylim() 
+                    limite = [x_lim[0],x_lim[1], y_lim[0],y_lim[1]]
+                    ax.imshow(imagem, extent= limite, alpha=0.2, aspect='auto', zorder=0)
+        
+                    ax.grid(True)
+                    ax.legend()
+                    ax.set_ylabel('vazao (m3/s)')
+                    ax.set_title(f'{cod} - {nome}', fontsize=14, fontweight="bold")
+        
+                    plt.tight_layout()
+                    salvarin =  f'{result}/{codigo}.png'
+                    plt.savefig(salvarin)
+                    # plt.show()
             else:
-                base = h_lim[0]
-            labels = np.arange(base, h_lim[1], size)
-            ticks = [cal_vazao(cod, data, q) for q in labels]
-            ax.set_yticks(ticks)
-            ax.set_yticklabels(labels)
+                # Gráfico
+                fig, ax = plt.subplots(figsize=(10,6), dpi=300)
+                df2['cota'].plot(ax=ax,label='Observado', linewidth = 3)
+               
+                if limiares == 'S':
+                    atencao = config[config['id_google']== codigo]['atencao'].iloc[0]
+                    alerta = config[config['id_google']== codigo]['alerta'].iloc[0]
+                    inundacao = config[config['id_google']== codigo]['inundacao'].iloc[0]
+                    plt.axhline(y=atencao, color='yellow', linestyle='--',linewidth = 2, label='atenção')
+                    plt.axhline(y=alerta, color='orange', linestyle='--',linewidth = 2, label='alerta')
+                    plt.axhline(y=inundacao, color='red', linestyle='--',linewidth = 2, label='inundação')
+                
+                # Adicionar a imagem como fundo
+                x_lim = ax.get_xlim()
+                y_lim = ax.get_ylim() 
+                limite = [x_lim[0],x_lim[1], y_lim[0],y_lim[1]]
+                ax.imshow(imagem, extent= limite, alpha=0.2, aspect='auto', zorder=0)
 
-            # Adicionar a imagem como fundo
-            x_lim = ax.get_xlim()
-            y_lim = ax.get_ylim() 
-            limite = [x_lim[0],x_lim[1], y_lim[0],y_lim[1]]
-            ax.imshow(imagem, extent= limite, alpha=0.2, aspect='auto', zorder=0)
+                ax.grid(True)
+                ax.legend()
+                ax.set_ylabel('cota (cm)')
+                ax.set_title(f'{cod} - {nome}', fontsize=14, fontweight="bold")
 
-            # Eixo secundario
-            ax1 = ax.twinx()
-            ax1.set_ylim(vz_lim)
-            ax1.set_yticks(ticks)
-
-            ax.grid(True)
-            ax.legend()
-            ax.set_ylabel('cota (cm)')
-            ax1.set_ylabel('vazao (m3/s)')
-            ax.set_title(f'{cod} - {nome}', fontsize=14, fontweight="bold")
-
-            plt.tight_layout()
-            salvarin =  f'{result}/{codigo}.png'
-            plt.savefig(salvarin)
-            # plt.show()   
-
+                plt.tight_layout()
+                salvarin =  f'{result}/{codigo}.png'
+                plt.savefig(salvarin)
+                # plt.show()   
         else:
-            # Gráfico
-            fig, ax = plt.subplots(figsize=(10,6), dpi=300)
-            df1.valor.plot(ax=ax,label='API-Google', linewidth = 3)
-             # Limiares
-            if limiares=='S':
-                atencao = config[config['id_google']== codigo]['atencao'].iloc[0]
-                alerta = config[config['id_google']== codigo]['alerta'].iloc[0]
-                inundacao = config[config['id_google']== codigo]['inundacao'].iloc[0]
-                plt.axhline(y=atencao, color='yellow', linestyle='--',linewidth = 2, label='atenção')
-                plt.axhline(y=alerta, color='orange', linestyle='--',linewidth = 2, label='alerta')
-                plt.axhline(y=inundacao, color='red', linestyle='--',linewidth = 2, label='inundação')
-           
-            # Adicionar a imagem como fundo
-            x_lim = ax.get_xlim()
-            y_lim = ax.get_ylim() 
-            limite = [x_lim[0],x_lim[1], y_lim[0],y_lim[1]]
-            ax.imshow(imagem, extent= limite, alpha=0.2, aspect='auto', zorder=0)
-
-            ax.grid(True)
-            ax.legend()
-            ax.set_ylabel('vazao (m3/s)')
-            ax.set_title(f'{cod} - {nome}', fontsize=14, fontweight="bold")
-
-            plt.tight_layout()
-            salvarin =  f'{result}/{codigo}.png'
-            plt.savefig(salvarin)
-            # plt.show()
-
+            if not df1.empty:
+                # Gráfico
+                fig, ax = plt.subplots(figsize=(10,6), dpi=300)
+                df1['data'] = df1['data'].dt.tz_localize(None)
+                df1.columns = ['datahora', 'data_prev', 'codigo', 'valor', 'atencao', 'alerta', 'inundacao',
+                               'unidade', 'qualityVerified']
+                df1.set_index('datahora', inplace=True)
+                df1.valor.plot(ax=ax,label='API-Google', linewidth = 3)
+                 # Limiares
+                if limiares=='S':
+                    atencao = config[config['id_google']== codigo]['atencao'].iloc[0]
+                    alerta = config[config['id_google']== codigo]['alerta'].iloc[0]
+                    inundacao = config[config['id_google']== codigo]['inundacao'].iloc[0]
+                    plt.axhline(y=atencao, color='yellow', linestyle='--',linewidth = 2, label='atenção')
+                    plt.axhline(y=alerta, color='orange', linestyle='--',linewidth = 2, label='alerta')
+                    plt.axhline(y=inundacao, color='red', linestyle='--',linewidth = 2, label='inundação')
+               
+                # Adicionar a imagem como fundo
+                x_lim = ax.get_xlim()
+                y_lim = ax.get_ylim() 
+                limite = [x_lim[0],x_lim[1], y_lim[0],y_lim[1]]
+                ax.imshow(imagem, extent= limite, alpha=0.2, aspect='auto', zorder=0)
+    
+                ax.grid(True)
+                ax.legend()
+                ax.set_ylabel('vazao (m3/s)')
+                ax.set_title(f'{cod} - {nome}', fontsize=14, fontweight="bold")
+    
+                plt.tight_layout()
+                salvarin =  f'{result}/{codigo}.png'
+                plt.savefig(salvarin)
+                # plt.show()
+            else:
+                # Gráfico
+                fig, ax = plt.subplots(figsize=(10,6), dpi=300)
+                ax.set_title('Sem dados de monitoramento e previsão', fontsize='20')
+                salvarin =  f'{result}/{codigo}.png'
+                plt.savefig(salvarin)
+                # plt.show()
 
 # ROTINA PRINCIPAL
 if __name__=='__main__':
@@ -326,4 +406,5 @@ if __name__=='__main__':
     
 
 
-#Fim
+
+
